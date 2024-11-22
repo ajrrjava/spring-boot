@@ -6,13 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
@@ -20,6 +19,7 @@ import java.util.List;
 
 @SpringBootApplication
 @RestController
+@RequestMapping("/planets")
 public class Controller {
     private static final Logger log = LoggerFactory.getLogger(Controller.class);
 
@@ -30,22 +30,23 @@ public class Controller {
         SpringApplication.run(Controller.class, args);
     }
 
-    @GetMapping("/planet")
-    public ResponseEntity<Planet> getPlanet(@RequestParam int id) {
+    @GetMapping("{id}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Planet> getPlanet(@PathVariable int id) {
         log.info("Getting planet with id = {}", id);
 
         return planetService.getPlanet(id);
     }
 
-    @GetMapping("/planets")
+    @GetMapping("")
     public ResponseEntity<List<Planet>> getPlanets() {
         log.info("Getting all planets");
 
         return planetService.getPlanets();
     }
 
-    @PostMapping("/planet")
-    public ResponseEntity<String> addPlanet(@RequestParam String name) {
+    @PostMapping("{name}")
+    public ResponseEntity<String> addPlanet(@PathVariable String name) {
         log.info("Adding planet with name = {}", name);
 
         Planet planet = new Planet();
@@ -53,8 +54,9 @@ public class Controller {
         return planetService.addPlanet(planet);
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<String> deletePlanet(@RequestParam("id") int id) {
+    @DeleteMapping("{id}")
+    @PreAuthorize(value="hasRole('ADMIN')")
+    public ResponseEntity<String> deletePlanet(@PathVariable("id") int id) {
         log.info("Deleting planet with id = {}", id);
 
         return planetService.deletePlanet(id);

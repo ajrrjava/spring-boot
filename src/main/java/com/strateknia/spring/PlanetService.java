@@ -19,8 +19,14 @@ public class PlanetService {
     }
 
     public ResponseEntity<String> deletePlanet(int id) {
-        planetRepository.deleteById(id);
-        return new ResponseEntity<>("Planet was deleted", HttpStatus.OK);
+        return planetRepository.findById(id)
+                .map(planet -> {
+                    planetRepository.deleteById(planet.getId());
+                    return new ResponseEntity<>("Planet was deleted", HttpStatus.OK);
+                })
+                .orElseThrow(() ->
+                        new NoSuchPlanetExistsException("Planet with Id = "+id+" does not exists!")
+                );
     }
 
     public ResponseEntity<Planet> getPlanet(int id) {
